@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>본교무실 원격 호출 시스템</title>
+    <style>
+        /* 깔끔하고 신뢰감을 주는 학교/학습 시스템 스타일링 */
+        :root {
+            --primary-color: #2b579a;
+            --background-color: #f4f6f9;
+            --card-color: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-color);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1e3d6b;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* 성공/실패 알림 메시지 스타일 */
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .success { background-color: #e2f0d9; color: #385723; border: 1px solid #c5e0b4; }
+        .error { background-color: #fce4d6; color: #c65911; border: 1px solid #f8cbad; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>본교무실 원격 호출 시스템</h2>
+    <div class="subtitle">시험기간 안전하고 신속한 교사 호출 서비스</div>
+    
+    <form id="callForm">
+        <div class="form-group">
+            <label for="studentId">학번</label>
+            <input type="text" id="studentId" placeholder="예: 30101" required pattern="[0-9]{5}" title="5자리 학번을 입력해주세요.">
+        </div>
+
+        <div class="form-group">
+            <label for="studentName">이름</label>
+            <input type="text" id="studentName" placeholder="홍길동" required>
+        </div>
+
+        <div class="form-group">
+            <label for="purpose">방문 목적</label>
+            <select id="purpose" required>
+                <option value="" disabled selected>방문 목적을 선택하세요</option>
+                <option value="수행평가 제출/질문">수행평가 제출 및 질문</option>
+                <option value="일반 교과 질문">일반 교과 내용 질문</option>
+                <option value="진학/학업 상담">진학 및 학업 상담</option>
+                <option value="기타 용무">기타 개인 용무</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="teacherName">호출할 선생님</label>
+            <select id="teacherName" required>
+                <option value="" disabled selected>선생님을 골라주세요</option>
+                <option value="송자선 교감선생님">송자선 교감선생님</option>
+                <option value="윤용민 선생님(지리)">윤용민 선생님(지리)</option>
+                <option value="김용진 선생님(국어)">김용진 선생님(국어)</option>
+                <option value="한은정 선생님(윤리)">한은정 선생님(윤리)</option>
+                <option value="장연지 선생님(영어)">장연지 선생님(영어)</option>
+                <option value="조미화 선생님(음악)">조미화 선생님(음악)</option>
+                <option value="윤방하 선생님(영어)">윤방하 선생님(영어)</option>
+                <option value="김은경 선생님">김은경 선생님</option>
+                <option value="김재곤 선생님(지구과학)">김재곤 선생님(지구과학)</option>
+                <option value="강효민 선생님(수학)">강효민 선생님(수학)</option>
+                <option value="이난주 선생님(생명과학)">이난주 선생님(생명과학)</option>
+                <option value="남현두 선생님(수학)">남현두 선생님(수학)</option>
+                <option value="이재령 선생님(국어)">이재령 선생님(국어)</option>
+                <option value="임영아 선생님(영어)">임영아 선생님(영어)</option>
+                <option value="이민희 선생님(사회)">이민희 선생님(사회)</option>
+                <option value="지연경 선생님">지연경 선생님</option>
+                <option value="강성권 선생님(수학)">강성권 선생님(수학)</option>
+                <option value="최지원 선생님(생명과학)">최지원 선생님(생명과학)</option>
+                <option value="황일수 선생님(수학)">황일수 선생님(수학)</option>
+                <option value="허남은 선생님(디지털 튜터)">허남은 선생님(디지털 튜터)</option>
+                <option value="정연우 선생님(영어)">정연우 선생님(영어)</option>
+                <option value="이동준 선생님(수학)">이동준 선생님(수학)</option>
+                <option value="이지은 선생님(국어)">이지은 선생님(국어)</option>
+                <option value="박문희 선생님(한문)">박문희 선생님(한문)</option>
+            </select>
+        </div>
+
+        <button type="submit" id="submitBtn">선생님 호출하기</button>
+    </form>
+
+    <div id="alertMessage" class="message"></div>
+</div>
+
+<script>
+    // ⚠️ 중요: 이전 단계에서 구글 앱스 스크립트 '새 배포' 후 받은 웹 앱 URL을 여기에 붙여넣으세요!
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxywFeM_r-RlkGM8Yr1499CUZ3x0-ylUIgnC6xVPWS_tLOL2YM1sxUeuVbdQ5q38VCW/exec";
+
+    document.getElementById('callForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // 폼 기본 제출 동작 방지
+
+        const submitBtn = document.getElementById('submitBtn');
+        const alertMessage = document.getElementById('alertMessage');
+
+        // 전송 중 버튼 비활성화
+        submitBtn.disabled = true;
+        submitBtn.innerText = "호출 신호 보내는 중...";
+        alertMessage.style.display = "none";
+
+        // 입력 데이터 수집
+        const payload = {
+            studentId: document.getElementById('studentId').value,
+            studentName: document.getElementById('studentName').value,
+            purpose: document.getElementById('purpose').value,
+            teacherName: document.getElementById('teacherName').value
+        };
+
+        // 구글 앱스 스크립트로 데이터 POST 전송
+        fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'text/plain' // CORS 이슈 우회를 위해 text/plain으로 전송 후 백엔드에서 파싱
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === "success") {
+                alertMessage.className = "message success";
+                alertMessage.innerText = "🔔 호출이 완료되었습니다! 교무실 밖에서 잠시만 대기해주세요.";
+                alertMessage.style.display = "block";
+                document.getElementById('callForm').reset(); // 폼 초기화
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            alertMessage.className = "message error";
+            alertMessage.innerText = "❌ 오류가 발생했습니다. 다시 시도하거나 운영자에게 문의하세요.";
+            alertMessage.style.display = "block";
+            console.error("Error:", error);
+        })
+        .finally(() => {
+            // 버튼 상태 원상복구
+            submitBtn.disabled = false;
+            submitBtn.innerText = "선생님 호출하기";
+        });
+    });
+</script>
+
+</body>
+</html>
