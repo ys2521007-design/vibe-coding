@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교무실 실시간 호출 알림판</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #1e1e2f;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4ef2d2;
+            margin-bottom: 5px;
+        }
+        .status {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #2a2a40;
+            border-left: 6px solid #4ef2d2;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-in-out;
+            position: relative;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .time { font-size: 12px; color: #888; text-align: right; }
+        .teacher { font-size: 18px; font-weight: bold; color: #ffeb3b; margin: 5px 0; }
+        .student { font-size: 16px; margin: 5px 0; }
+        .purpose { background: #3b3b54; padding: 6px; border-radius: 4px; font-size: 14px; margin-top: 8px; border-left: 3px solid #ff5722; }
+        
+        /* 확인 완료 버튼 */
+        .done-btn {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .done-btn:hover { background-color: #e64a19; }
+        .no-data { text-align: center; color: #888; grid-column: 1/-1; padding: 50px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h1>🔔 본교무실 실시간 호출 알림판</h1>
+    <div class="status">실시간 동기화 중... (10초 간격 자동 갱신)</div>
+
+    <div class="grid-container" id="board">
+        <div class="no-data">현재 대기 중인 학생 호출이 없습니다.</div>
+    </div>
+
+<script>
+    // ⚠️ 구글 시트 데이터를 가져오기 위해 동일한 스크립트 웹 앱 URL을 지정합니다.
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz9yggmapGfliqCHZuqnYJU8_TkzppLMaY2XYj8_rAOEOrLswh-cx3sIy0d6RIiLGYf/exec";
+    
+    let lastCheckedCount = 0;
+    let isFirstLoad = true;
+
+    // 브라우저 자체 오디오 신호음 생성 함수 (오디오 파일 링크 에러 방지용 전자음)
+    function playSound() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5음
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+        setTimeout(() => {
+            const osc2 = audioCtx.createOscillator();
+            osc2.connect(gainNode);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880, audioCtx.currentTime); // A5음
+            osc2.start();
+            osc2.stop(audioCtx.currentTime + 0.3);
+        }, 150);
+    }
+
+    // 구글 시트에서 호출 데이터를 읽어오는 함수
+    function fetchCalls() {
+        // GET 방식으로 데이터를 가져오도록 요청 (Apps script 수정 필요 없음)
+        fetch(GAS_URL + "?action=read")
+        .then(res => res.json())
+        .then(data => {
+            const board = document.getElementById('board');
+            
+            if (!data || data.length === 0) {
+                board.innerHTML = '<div class="no-data">현재 대기 중인 학생 호출이 없습니다.</div>';
+                lastCheckedCount = 0;
+                isFirstLoad = false;
+                return;
+            }
+
+            // 새로운 호출이 들어왔을 때 알림 소리 재생
+            if (!isFirstLoad && data.length > lastCheckedCount) {
+                playSound();
+            }
+            lastCheckedCount = data.length;
+            isFirstLoad = false;
+
+            // 알림 카드 화면에 그리기
+            board.innerHTML = '';
+            data.forEach((call, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="time">${call.time}</div>
+                    <div class="teacher">📍 ${call.teacher}</div>
+                    <div class="student">👤 ${call.studentId} ${call.name}</div>
+                    <div class="purpose">🎯 목적: ${call.purpose}</div>
+                    <button class="done-btn" onclick="removeCard(this)">확인 완료</button>
+                `;
+                board.appendChild(card);
+            });
+        })
+        .catch(err => console.error("데이터 가져오기 실패:", err));
+    }
+
+    // 화면에서 확인 완료된 카드 제거 (기능 모형)
+    function removeCard(btn) {
+        const card = btn.parentElement;
+        card.style.opacity = 0;
+        setTimeout(() => card.remove(), 300);
+    }
+
+    // 초기 실행 및 10초마다 자동 새로고침 
+    fetchCalls();
+    setInterval(fetchCalls, 10000);
+</script>
+</body>
+</html>
